@@ -139,44 +139,33 @@ jobs:
         run: gh pr comment ${{ github.event.pull_request.number }} --body "$(cat ai_suggestions.txt)"
         
       - name: Update PR description with TEST_RANGE
-              env:
-                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                echo "檢查 test_range.txt 是否存在"
-                ls -la
-                if [ -f "test_range.txt" ]; then
-                  PR_NUMBER=${{ github.event.pull_request.number }}
-                  TEST_RANGE=$(cat test_range.txt)
-                  echo "找到 TEST_RANGE: $TEST_RANGE"
-                  
-                echo "正在獲取 PR 描述"
-                CURRENT_BODY=$(gh pr view $PR_NUMBER --json body -q .body)
-                echo "PR 描述長度: ${#CURRENT_BODY}"
-                
-                if [[ "$CURRENT_BODY" == *"TEST_RANGE:"* ]]; then
-                  echo "檢測到現有 TEST_RANGE，將進行替換"
-                  NEW_BODY=$(echo "$CURRENT_BODY" | sed -E "s/TEST_RANGE:.*$/TEST_RANGE: $TEST_RANGE/g")
-                else
-                  echo "未檢測到現有 TEST_RANGE，將添加新條目"
-                  if [[ -z "$CURRENT_BODY" ]]; then
-                    NEW_BODY="TEST_RANGE: $TEST_RANGE"
-                  else
-                    NEW_BODY="${CURRENT_BODY}
-
-TEST_RANGE: $TEST_RANGE"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f "test_range.txt" ]; then
+            PR_NUMBER=${{ github.event.pull_request.number }}
+            TEST_RANGE=$(cat test_range.txt)
+            
+            # 獲取當前 PR 描述
+            CURRENT_BODY=$(gh pr view $PR_NUMBER --json body -q .body)
+            
+            # 創建臨時文件以避免 YAML 語法問題
+            if [[ "$CURRENT_BODY" == *"TEST_RANGE:"* ]]; then
+              # 存在則替換
+              echo "$CURRENT_BODY" | sed "s/TEST_RANGE:.*$/TEST_RANGE: $TEST_RANGE/" > new_body.txt
+            else
+              # 不存在則添加
+              if [ -z "$CURRENT_BODY" ]; then
+                echo "TEST_RANGE: $TEST_RANGE" > new_body.txt
+              else
+                echo "$CURRENT_BODY" > new_body.txt
+                echo "" >> new_body.txt
+                echo "TEST_RANGE: $TEST_RANGE" >> new_body.txt
               fi
             fi
             
-            echo "$NEW_BODY" > new_pr_body.txt
-            echo "新 PR 描述已寫入臨時檔案"
-            
-            echo "正在嘗試更新 PR 描述"
-            gh pr edit $PR_NUMBER --body-file new_pr_body.txt
-            if [ $? -eq 0 ]; then
-              echo "已成功將 TEST_RANGE: $TEST_RANGE 更新到 PR 描述中"
-            else
-              echo "更新 PR 描述失敗，錯誤碼: $?"
-            fi
+            # 更新 PR 描述
+            gh pr edit $PR_NUMBER --body-file new_body.txt
           else
-            echo "找不到 test_range.txt 文件，無法更新 PR 描述"
+            echo "找不到 test_range.txt 文件"
           fi
