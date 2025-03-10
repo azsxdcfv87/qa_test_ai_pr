@@ -163,20 +163,20 @@ jobs:
             else
               NEW_BODY="${CURRENT_BODY}
 
-TEST_RANGE: $TEST_RANGE"
-              fi
-            fi
-            
-            echo "$NEW_BODY" > new_pr_body.txt
-            echo "新 PR 描述已寫入臨時檔案"
-            
-            echo "正在嘗試更新 PR 描述"
-            gh pr edit $PR_NUMBER --body-file new_pr_body.txt
-            if [ $? -eq 0 ]; then
-              echo "已成功將 TEST_RANGE: $TEST_RANGE 更新到 PR 描述中"
-            else
-              echo "更新 PR 描述失敗，錯誤碼: $?"
-            fi
-          else
-            echo "找不到 test_range.txt 文件，無法更新 PR 描述"
-          fi
+          TEST_RANGE: $TEST_RANGE"
+                        fi
+                      fi
+                      
+                      echo "$NEW_BODY" > new_pr_body.txt
+                      echo "新 PR 描述已寫入臨時檔案"
+                      
+                      echo "正在嘗試更新 PR 描述"
+                      gh pr edit $PR_NUMBER --body-file new_pr_body.txt
+                      if [ $? -eq 0 ]; then
+                        echo "已成功將 TEST_RANGE: $TEST_RANGE 更新到 PR 描述中"
+                      else
+                        echo "更新 PR 描述失敗，錯誤碼: $?"
+                      fi
+                    else
+                      echo "找不到 test_range.txt 文件，無法更新 PR 描述"
+                    fi
