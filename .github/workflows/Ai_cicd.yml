@@ -36,7 +36,7 @@ jobs:
           echo "PR_BODY=$(gh pr view $pr_number --json body -q .body)" >> $GITHUB_ENV
           echo "Current PR Title: $(gh pr view $pr_number --json title -q .title)"
           echo "Current PR Body: $(gh pr view $pr_number --json body -q .body)"
-      
+ㄕ      
       - name: Create script directory
         run: |
           mkdir -p .github/scripts
