@@ -36,7 +36,12 @@ genai.configure(api_key=api_key)
 
 # 生成 AI 分析內容
 prompt = f"""
-你是一位專業的軟體測試專家，請根據以下 PR 標題和描述，以及測試提供的現有 Tags，提供符合內容的自動化測試Tags，並寫成 TEST_RANGE：login, register ...etc
+你是一位專業的軟體測試專家，請根據以下 PR 標題和描述，以及測試提供的現有 Tags，提供符合內容的自動化測試Tags。
+
+重要規則：
+1. 直接輸出 TEST_RANGE: login, register, following
+2. 不要使用代碼塊（```）標記
+3. 只輸出 TEST_RANGE 的內容，不需要其他解釋
 
 PR 標題: {pr_title}
 PR 內文: {pr_body}
@@ -66,30 +71,21 @@ try:
         f.write(f"🚀 **AI 測試建議**\n{suggestions}")
     
     # 嘗試匹配多種可能的 TEST_RANGE 格式
-    test_range_match = re.search(r'TEST_RANGE[:=]\s*["\'](.*?)["\']', suggestions, re.DOTALL)
+    test_range_match = re.search(r'TEST_RANGE:(.*?)(?:\n|$)', suggestions, re.DOTALL)
     if not test_range_match:
         # 如果上面的模式不匹配，嘗試其他模式
         test_range_match = re.search(r'TEST_RANGE[:=]\s*(.*?)(?:\n|$)', suggestions, re.DOTALL)
 
     if test_range_match:
-        test_range = test_range_match.group(1).strip()
-        
-        # 移除引號（如果有）
-        test_range = test_range.strip('"\'')
-        
-        # 移除任何 Markdown 程式碼區塊標記
-        test_range = re.sub(r'```.*?```', '', test_range, flags=re.DOTALL).strip()
-        test_range = re.sub(r'```.*?$', '', test_range, flags=re.DOTALL).strip()
-        test_range = test_range.replace('```', '').strip()
-        
-        print(f"提取的 TEST_RANGE: {test_range}")
-        
-        # 保存乾淨的 TEST_RANGE 到檔案
-        with open("test_range.txt", "w", encoding="utf-8") as f:
-            f.write(test_range)
-        print(f"成功提取並保存 TEST_RANGE: {test_range}")
-    else:
-        print("無法從 AI 建議中提取 TEST_RANGE")
+      test_range = test_range_match.group(1).strip()
+      
+      # 移除可能的引號和代碼塊標記
+      test_range = test_range.strip('`" ')
+      
+      # 保存乾淨的 TEST_RANGE 到檔案
+      with open("test_range.txt", "w", encoding="utf-8") as f:
+          f.write(test_range)
+      print(f"成功提取並保存 TEST_RANGE: {test_range}")
         
 except Exception as e:
     print(f"生成內容時發生錯誤: {e}")
