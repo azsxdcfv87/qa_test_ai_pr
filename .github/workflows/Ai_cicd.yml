@@ -31,8 +31,15 @@ jobs:
         run: |
           pr_number=${{ github.event.pull_request.number }}
           gh pr view $pr_number
-          echo "PR_TITLE=$(gh pr view $pr_number --json title -q .title)" >> $GITHUB_ENV
-          echo "PR_BODY=$(gh pr view $pr_number --json body -q .body)" >> $GITHUB_ENV
+          
+          # 使用唯一的分隔符處理多行環境變量
+          echo "PR_TITLE<<EOF" >> $GITHUB_ENV
+          gh pr view $pr_number --json title -q .title >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          
+          echo "PR_BODY<<EOF" >> $GITHUB_ENV
+          gh pr view $pr_number --json body -q .body >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       
       - name: Create script directory
         run: |
