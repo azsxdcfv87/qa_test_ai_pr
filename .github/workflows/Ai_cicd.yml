@@ -160,13 +160,13 @@ jobs:
               else
                 NEW_BODY="${CURRENT_BODY}
 
-TEST_RANGE: $TEST_RANGE"
-              fi
-            fi
-            
-            # 更新 PR 描述
-            gh pr edit $PR_NUMBER --body "$NEW_BODY"
-            echo "已將 TEST_RANGE: $TEST_RANGE 更新到 PR 描述中"
-          else
-            echo "找不到 test_range.txt 文件，無法更新 PR 描述"
-          fi
+          TEST_RANGE: $TEST_RANGE"
+                        fi
+                      fi
+                      
+                      # 更新 PR 描述
+                      gh pr edit $PR_NUMBER --body "$NEW_BODY"
+                      echo "已將 TEST_RANGE: $TEST_RANGE 更新到 PR 描述中"
+                    else
+                      echo "找不到 test_range.txt 文件，無法更新 PR 描述"
+                    fi
