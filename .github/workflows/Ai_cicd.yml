@@ -25,7 +25,7 @@ jobs:
       - name: Run AI Analysis
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-        run: python .github/scripts/ai_test_recommendation.py
+        run: python .github/scripts/Ai_run.py
       - name: Comment on PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
