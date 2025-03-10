@@ -23,15 +23,19 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install google-generativeai pyyaml requests
-          
+          ㄕ
       - name: Get PR Details
         id: pr_details
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           pr_number=${{ github.event.pull_request.number }}
+          echo "PR Number: $pr_number"
+          gh pr view $pr_number
           echo "PR_TITLE=$(gh pr view $pr_number --json title -q .title)" >> $GITHUB_ENV
           echo "PR_BODY=$(gh pr view $pr_number --json body -q .body)" >> $GITHUB_ENV
+          echo "Current PR Title: $(gh pr view $pr_number --json title -q .title)"
+          echo "Current PR Body: $(gh pr view $pr_number --json body -q .body)"
       
       - name: Create script directory
         run: |
