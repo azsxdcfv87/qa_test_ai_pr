@@ -4,10 +4,18 @@ import re
 import yaml
 import google.generativeai as genai
 
+# 打印所有環境變數
+print("環境變數:")
+for key, value in os.environ.items():
+    print(f"{key}: {value}")
+
 # 讀取環境變數
 api_key = os.getenv("GOOGLE_API_KEY")
 pr_title = os.getenv("PR_TITLE", "")
 pr_body = os.getenv("PR_BODY", "")
+
+print(f"PR_TITLE: {pr_title}")
+print(f"PR_BODY: {pr_body}")
 
 if not api_key:
     raise ValueError("API Key 未設定，請檢查 GitHub Secrets")
@@ -18,6 +26,7 @@ try:
         tags_data = yaml.safe_load(file)
     # 將標籤列表轉換為逗號分隔的字符串
     available_tags = ", ".join(tags_data.get('tags', []))
+    print(f"成功讀取標籤: {available_tags}")
 except Exception as e:
     print(f"讀取標籤檔案時發生錯誤: {e}")
     available_tags = "livestream, settings, following, login, register"  # 預設標籤，以防檔案讀取失敗
@@ -49,6 +58,8 @@ try:
     
     # 擷取 AI 建議
     suggestions = response.text
+    print("AI 建議內容:")
+    print(suggestions)
     
     # 儲存到檔案
     with open("ai_suggestions.txt", "w", encoding="utf-8") as f:
@@ -70,6 +81,8 @@ try:
         test_range = re.sub(r'```.*?```', '', test_range, flags=re.DOTALL).strip()
         test_range = re.sub(r'```.*?$', '', test_range, flags=re.DOTALL).strip()
         test_range = test_range.replace('```', '').strip()
+        
+        print(f"提取的 TEST_RANGE: {test_range}")
         
         # 保存乾淨的 TEST_RANGE 到檔案
         with open("test_range.txt", "w", encoding="utf-8") as f:
