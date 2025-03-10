@@ -5,7 +5,7 @@ on:
 # 添加這個權限區塊
 permissions:
   contents: read
-  pull-requests: write  # 這使工作流程可以評論 PR
+  pull-requests: write  # 這使工作流程可以評論和編輯 PR
 
 jobs:
   ai_test_suggestion:
@@ -32,31 +32,9 @@ jobs:
           echo "PR_TITLE=$(gh pr view ${{ github.event.pull_request.number }} --json title -q .title)" >> $GITHUB_ENV
           echo "PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} --json body -q .body)" >> $GITHUB_ENV
       
-      - name: Create script directory and data directory
+      - name: Create script directory
         run: |
           mkdir -p .github/scripts
-          mkdir -p .github/data
-      
-      - name: Create test tags file
-        run: |
-          cat > .github/data/test_tags.yaml << 'EOF'
-          tags:
-            - livestream
-            - settings
-            - following
-            - login
-            - register
-            - profile
-            - notification
-            - search
-            - feed
-            - comment
-            - upload
-            - dashboard
-            - payment
-            - subscription
-            - messaging
-          EOF
       
       - name: Create AI script
         run: |
@@ -64,6 +42,7 @@ jobs:
           import os
           import sys
           import yaml
+          import re
           import google.generativeai as genai
 
           # 讀取環境變數
@@ -76,8 +55,25 @@ jobs:
 
           # 讀取測試標籤 YAML 檔案
           try:
-              with open('.github/data/test_tags.yaml', 'r') as file:
-                  tags_data = yaml.safe_load(file)
+              # 嘗試從倉庫中讀取 YAML 檔案
+              yaml_paths = [
+                  '.github/data/test_tags.yaml',  # 首選路徑
+                  'test_tags.yaml',                # 備選路徑
+                  '.github/test_tags.yaml'         # 另一個備選路徑
+              ]
+              
+              tags_data = None
+              for path in yaml_paths:
+                  if os.path.exists(path):
+                      with open(path, 'r') as file:
+                          tags_data = yaml.safe_load(file)
+                      print(f"成功從 {path} 讀取標籤")
+                      break
+              
+              # 若都沒找到，使用預設值
+              if tags_data is None:
+                  raise FileNotFoundError("找不到標籤檔案")
+                  
               # 將標籤列表轉換為逗號分隔的字符串
               available_tags = ", ".join(tags_data.get('tags', []))
           except Exception as e:
@@ -116,6 +112,17 @@ jobs:
               with open("ai_suggestions.txt", "w", encoding="utf-8") as f:
                   f.write(f"🚀 **AI 測試建議**\n{suggestions}")
               
+              # 嘗試從回應中提取 TEST_RANGE
+              test_range_match = re.search(r'TEST_RANGE:\s*(.*?)(?:\n\n|$)', suggestions, re.DOTALL)
+              if test_range_match:
+                  test_range = test_range_match.group(1).strip()
+                  # 保存 TEST_RANGE 到單獨的文件
+                  with open("test_range.txt", "w", encoding="utf-8") as f:
+                      f.write(test_range)
+                  print(f"成功提取並保存 TEST_RANGE: {test_range}")
+              else:
+                  print("無法從 AI 建議中提取 TEST_RANGE")
+              
           except Exception as e:
               print(f"生成內容時發生錯誤: {e}")
               sys.exit(1)
@@ -130,3 +137,36 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr comment ${{ github.event.pull_request.number }} --body "$(cat ai_suggestions.txt)"
+        
+      - name: Update PR description with TEST_RANGE
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f "test_range.txt" ]; then
+            PR_NUMBER=${{ github.event.pull_request.number }}
+            TEST_RANGE=$(cat test_range.txt)
+            
+            # 獲取當前 PR 描述
+            CURRENT_BODY=$(gh pr view $PR_NUMBER --json body -q .body)
+            
+            # 檢查是否已有 TEST_RANGE 標記
+            if [[ "$CURRENT_BODY" == *"TEST_RANGE:"* ]]; then
+              # 替換現有的 TEST_RANGE
+              NEW_BODY=$(echo "$CURRENT_BODY" | sed -E "s/TEST_RANGE:.*$/TEST_RANGE: $TEST_RANGE/g")
+            else
+              # 添加 TEST_RANGE 到描述末尾
+              if [[ -z "$CURRENT_BODY" ]]; then
+                NEW_BODY="TEST_RANGE: $TEST_RANGE"
+              else
+                NEW_BODY="${CURRENT_BODY}
+
+TEST_RANGE: $TEST_RANGE"
+              fi
+            fi
+            
+            # 更新 PR 描述
+            gh pr edit $PR_NUMBER --body "$NEW_BODY"
+            echo "已將 TEST_RANGE: $TEST_RANGE 更新到 PR 描述中"
+          else
+            echo "找不到 test_range.txt 文件，無法更新 PR 描述"
+          fi
