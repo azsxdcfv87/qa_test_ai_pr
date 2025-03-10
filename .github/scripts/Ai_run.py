@@ -62,9 +62,16 @@ try:
 
     if test_range_match:
         test_range = test_range_match.group(1).strip()
-        # 移除可能存在的 Markdown 代碼塊標記
-        test_range = re.sub(r'```.*$', '', test_range, flags=re.MULTILINE).strip()
-        # 保存 TEST_RANGE 到單獨的文件
+        
+        # 移除引號（如果有）
+        test_range = test_range.strip('"\'')
+        
+        # 移除任何 Markdown 程式碼區塊標記
+        test_range = re.sub(r'```.*?```', '', test_range, flags=re.DOTALL).strip()
+        test_range = re.sub(r'```.*?$', '', test_range, flags=re.DOTALL).strip()
+        test_range = test_range.replace('```', '').strip()
+        
+        # 保存乾淨的 TEST_RANGE 到檔案
         with open("test_range.txt", "w", encoding="utf-8") as f:
             f.write(test_range)
         print(f"成功提取並保存 TEST_RANGE: {test_range}")
