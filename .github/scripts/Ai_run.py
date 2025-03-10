@@ -1,5 +1,6 @@
 import os
 import sys
+import yaml
 import google.generativeai as genai
 
 # 讀取環境變數
@@ -10,15 +11,27 @@ pr_body = os.getenv("PR_BODY", "")
 if not api_key:
     raise ValueError("API Key 未設定，請檢查 GitHub Secrets")
 
+# 讀取測試標籤 YAML 檔案
+try:
+    with open('.github/data/test_tags.yaml', 'r') as file:
+        tags_data = yaml.safe_load(file)
+    # 將標籤列表轉換為逗號分隔的字符串
+    available_tags = ", ".join(tags_data.get('tags', []))
+except Exception as e:
+    print(f"讀取標籤檔案時發生錯誤: {e}")
+    available_tags = "livestream, settings, following, login, register"  # 預設標籤，以防檔案讀取失敗
+
 # 初始化 Google GenAI 客戶端
 genai.configure(api_key=api_key)
 
 # 生成 AI 分析內容
 prompt = f"""
-你是一位專業的軟體測試專家，請根據以下 PR 標題和描述，提供適合的自動化測試建議（例如：單元測試、整合測試、E2E 測試、效能測試或安全測試），並解釋推薦的原因：
----
+你是一位專業的軟體測試專家，請根據以下 PR 標題和描述，以及測試提供的現有 Tags，提供符合內容的自動化測試Tags，並寫成 TEST_RANGE：login, register ...etc
+
 PR 標題: {pr_title}
 PR 內文: {pr_body}
+
+可用的測試 Tags: {available_tags}
 """
 
 try:
