@@ -8,7 +8,6 @@ import google.generativeai as genai
 api_key = os.getenv("GOOGLE_API_KEY")
 pr_title = os.getenv("PR_TITLE", "")
 pr_body = os.getenv("PR_BODY", "")
-test_range_match = re.search(r'TEST_RANGE:\s*(.*?)(?:\n|$)', suggestions, re.DOTALL)
 
 if not api_key:
     raise ValueError("API Key 未設定，請檢查 GitHub Secrets")
@@ -55,18 +54,19 @@ try:
     with open("ai_suggestions.txt", "w", encoding="utf-8") as f:
         f.write(f"🚀 **AI 測試建議**\n{suggestions}")
     
+    # 嘗試從回應中提取 TEST_RANGE
+    test_range_match = re.search(r'TEST_RANGE:\s*(.*?)(?:\n|$)', suggestions, re.DOTALL)
+    if test_range_match:
+        test_range = test_range_match.group(1).strip()
+        # 移除可能存在的 Markdown 代碼塊標記
+        test_range = re.sub(r'```.*$', '', test_range, flags=re.MULTILINE).strip()
+        # 保存 TEST_RANGE 到單獨的文件
+        with open("test_range.txt", "w", encoding="utf-8") as f:
+            f.write(test_range)
+        print(f"成功提取並保存 TEST_RANGE: {test_range}")
+    else:
+        print("無法從 AI 建議中提取 TEST_RANGE")
+        
 except Exception as e:
     print(f"生成內容時發生錯誤: {e}")
     sys.exit(1)
-
-# 嘗試從回應中提取 TEST_RANGE
-if test_range_match:
-    test_range = test_range_match.group(1).strip()
-    # 移除可能存在的 Markdown 代碼塊標記
-    test_range = re.sub(r'```.*$', '', test_range, flags=re.MULTILINE).strip()
-    # 保存 TEST_RANGE 到單獨的文件
-    with open("test_range.txt", "w", encoding="utf-8") as f:
-        f.write(test_range)
-    print(f"成功提取並保存 TEST_RANGE: {test_range}")
-else:
-    print("無法從 AI 建議中提取 TEST_RANGE")
