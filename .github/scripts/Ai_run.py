@@ -55,7 +55,7 @@ try:
         f.write(f"🚀 **AI 測試建議**\n{suggestions}")
     
     # 嘗試從回應中提取 TEST_RANGE
-    test_range_match = re.search(r'TEST_RANGE:\s*(.*?)(?:\n|$)', suggestions, re.DOTALL)
+    test_range_match = re.search(r'TEST_RANGE[:\s]+(.*?)(?:\n|$)', suggestions, re.DOTALL | re.IGNORECASE)
     if test_range_match:
         test_range = test_range_match.group(1).strip()
         # 移除可能存在的 Markdown 代碼塊標記
