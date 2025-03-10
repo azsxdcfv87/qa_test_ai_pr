@@ -23,14 +23,14 @@ PR 內文: {pr_body}
 
 try:
     # 使用 gemini-2.0-flash 模型生成內容
-    response = genai.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt,
-        generation_config={
-            "temperature": 0.2,
-            "top_p": 0.7,
-            "max_output_tokens": 1024
-        }
+    model = genai.GenerativeModel(model_name="gemini-2.0-flash")
+    response = model.generate_content(
+        prompt,
+        generation_config=genai.GenerationConfig(
+            temperature=0.2,
+            top_p=0.7,
+            max_output_tokens=1024
+        )
     )
     
     # 擷取 AI 建議
