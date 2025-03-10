@@ -18,7 +18,7 @@ jobs:
       - name: Get PR Details
         id: pr_details
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_USER_SWAG_BOT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "PR_TITLE=$(gh pr view ${{ github.event.pull_request.number }} --json title -q .title)" >> $GITHUB_ENV
           echo "PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} --json body -q .body)" >> $GITHUB_ENV
@@ -28,5 +28,5 @@ jobs:
         run: python .github/scripts/ai_test_recommendation.py
       - name: Comment on PR
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr comment ${{ github.event.pull_request.number }} --body "$(cat ai_suggestions.txt)"
