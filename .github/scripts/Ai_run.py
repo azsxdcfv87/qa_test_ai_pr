@@ -8,7 +8,7 @@ import google.generativeai as genai
 api_key = os.getenv("GOOGLE_API_KEY")
 pr_title = os.getenv("PR_TITLE", "")
 pr_body = os.getenv("PR_BODY", "")
-test_range_match = re.search(r'TEST_RANGE:\s*(.*?)(?:\n\n|$)', suggestions, re.DOTALL)
+test_range_match = re.search(r'TEST_RANGE:\s*(.*?)(?:\n|$)', suggestions, re.DOTALL)
 
 if not api_key:
     raise ValueError("API Key 未設定，請檢查 GitHub Secrets")
@@ -62,6 +62,8 @@ except Exception as e:
 # 嘗試從回應中提取 TEST_RANGE
 if test_range_match:
     test_range = test_range_match.group(1).strip()
+    # 移除可能存在的 Markdown 代碼塊標記
+    test_range = re.sub(r'```.*$', '', test_range, flags=re.MULTILINE).strip()
     # 保存 TEST_RANGE 到單獨的文件
     with open("test_range.txt", "w", encoding="utf-8") as f:
         f.write(test_range)
