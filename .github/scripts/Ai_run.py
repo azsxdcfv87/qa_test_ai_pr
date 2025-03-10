@@ -1,6 +1,6 @@
 import os
 import sys
-from google import genai
+import google.generativeai as genai
 
 # 讀取環境變數
 api_key = os.getenv("GOOGLE_API_KEY")
