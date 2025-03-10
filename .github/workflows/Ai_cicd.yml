@@ -41,7 +41,7 @@ jobs:
           
           echo "Current PR Title: $pr_title"
           echo "Current PR Body: $pr_body"
-
+      
       - name: Create script directory
         run: |
           mkdir -p .github/scripts
