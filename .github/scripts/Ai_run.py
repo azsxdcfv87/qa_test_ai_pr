@@ -54,8 +54,12 @@ try:
     with open("ai_suggestions.txt", "w", encoding="utf-8") as f:
         f.write(f"🚀 **AI 測試建議**\n{suggestions}")
     
-    # 嘗試從回應中提取 TEST_RANGE
-    test_range_match = re.search(r'TEST_RANGE[:\s]+(.*?)(?:\n|$)', suggestions, re.DOTALL | re.IGNORECASE)
+    # 嘗試匹配多種可能的 TEST_RANGE 格式
+    test_range_match = re.search(r'TEST_RANGE[:=]\s*["\'](.*?)["\']', suggestions, re.DOTALL)
+    if not test_range_match:
+        # 如果上面的模式不匹配，嘗試其他模式
+        test_range_match = re.search(r'TEST_RANGE[:=]\s*(.*?)(?:\n|$)', suggestions, re.DOTALL)
+
     if test_range_match:
         test_range = test_range_match.group(1).strip()
         # 移除可能存在的 Markdown 代碼塊標記
