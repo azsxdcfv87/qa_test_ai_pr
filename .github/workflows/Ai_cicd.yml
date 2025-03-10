@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"  # 可依需求調整 Python 版本
+          python-version: "3.13"  # 可依需求調整 Python 版本
           
       - name: Install dependencies
         run: |
@@ -94,7 +94,12 @@ jobs:
 
           # 生成 AI 分析內容
           prompt = f"""
-          你是一位專業的軟體測試專家，請根據以下 PR 標題和描述，以及測試提供的現有 Tags，提供符合內容的自動化測試Tags，並寫成 TEST_RANGE：login, register ...etc
+          你是一位專業的軟體測試專家，請根據以下 PR 標題和描述，以及測試提供的現有 Tags，提供符合內容的自動化測試Tags。
+
+          重要規則：
+          1. 直接輸出 TEST_RANGE: login, register, following
+          2. 不要使用代碼塊（```）標記
+          3. 只輸出 TEST_RANGE 的內容，不需要其他解釋
 
           PR 標題: {pr_title}
           PR 內文: {pr_body}
