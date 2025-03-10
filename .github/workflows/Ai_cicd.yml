@@ -29,8 +29,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "PR_TITLE=$(gh pr view ${{ github.event.pull_request.number }} --json title -q .title)" >> $GITHUB_ENV
-          echo "PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} --json body -q .body)" >> $GITHUB_ENV
+          pr_number=${{ github.event.pull_request.number }}
+          echo "PR_TITLE=$(gh pr view $pr_number --json title -q .title)" >> $GITHUB_ENV
+          echo "PR_BODY=$(gh pr view $pr_number --json body -q .body)" >> $GITHUB_ENV
       
       - name: Create script directory
         run: |
