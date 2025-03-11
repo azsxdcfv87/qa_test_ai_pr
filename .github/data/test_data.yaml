@@ -1,5 +1,8 @@
-# test_tags.yaml
-tags:
+# test_data.yaml
+BASE_URL:
+  - https://swag.live/?lang=zh-tw
+
+TEST_RANGE:
   - livestream
   - settings
   - following
