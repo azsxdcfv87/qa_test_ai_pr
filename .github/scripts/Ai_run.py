@@ -22,10 +22,10 @@ if not api_key:
 
 # 讀取測試標籤 YAML 檔案
 try:
-    with open('.github/data/test_tags.yaml', 'r') as file:
+    with open('.github/data/test_data.yaml', 'r') as file:
         tags_data = yaml.safe_load(file)
     # 將標籤列表轉換為逗號分隔的字符串
-    available_tags = ", ".join(tags_data.get('tags', []))
+    available_tags = ", ".join(tags_data.get('TEST_RANGE', []))
     print(f"成功讀取標籤: {available_tags}")
 except Exception as e:
     print(f"讀取標籤檔案時發生錯誤: {e}")
@@ -68,7 +68,7 @@ try:
     
     # 儲存到檔案
     with open("ai_suggestions.txt", "w", encoding="utf-8") as f:
-        f.write(f"🚀 **AI 測試建議**\n{suggestions}")
+        f.write(f"🚀 **AI 自動化測試標籤建議**\n{suggestions}")
     
     # 嘗試匹配多種可能的 TEST_RANGE 格式
     test_range_match = re.search(r'TEST_RANGE:(.*?)(?:\n|$)', suggestions, re.DOTALL)

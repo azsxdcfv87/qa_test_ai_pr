@@ -41,6 +41,13 @@ jobs:
           gh pr view $pr_number --json body -q .body >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
+      - name: Update PR with Default BASE_URL
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_TITLE: ${{ env.PR_TITLE }}
+          PR_BODY: ${{ env.PR_BODY }}
+        run: python .github/scripts/update_base_url.py
+
       - name: Run AI Analysis
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
