@@ -2,12 +2,11 @@ import os
 import sys
 import yaml
 import re
-import google.generativeai as genai
 
 # 讀取環境變數
-api_key = os.getenv("GOOGLE_API_KEY")
-pr_title = os.getenv("PR_TITLE", "")
-pr_body = os.getenv("PR_BODY", "")
+pr_number = os.environ.get('GITHUB_EVENT_PULL_REQUEST_NUMBER', '')
+pr_title = os.environ.get('PR_TITLE', '')
+pr_body = os.environ.get('PR_BODY', '')
 
 # 嘗試讀取測試數據 YAML 檔案
 try:
@@ -28,7 +27,9 @@ if not base_url_match:
     updated_pr_body = f"{pr_body}\n\nBASE_URL: {default_base_url}"
     
     # 使用 GitHub CLI 更新 PR 描述
-    os.system(f"gh pr edit ${{ github.event.pull_request.number }} --body '{updated_pr_body}'")
+    update_cmd = f"gh pr edit {pr_number} --body '{updated_pr_body}'"
+    print(f"執行命令: {update_cmd}")
+    os.system(update_cmd)
     
     print(f"已將預設 BASE_URL 添加到 PR 描述：{default_base_url}")
 else:
